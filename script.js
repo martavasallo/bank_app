@@ -65,9 +65,9 @@ const currencies = new Map([
 
 const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 
-/////////////////////////////////////////////////
 
-// DISPLAY MOVEMENTS DEPOSIT AND WITHDREW
+
+// ----------- DISPLAY MOVEMENTS DEPOSIT AND WITHDREW --------------------------
 const displayMovements = function (movements) {
   // take out default movements
   containerMovements.innerHTML = "";
@@ -88,10 +88,19 @@ const displayMovements = function (movements) {
 };
 displayMovements(account1.movements);
 
+//----------------------------DISPLAY BALANCE-----------------------------------
 
+const calcDisplayBalance = function (movements) {
+  const balance = movements.reduce((acc, mov) => acc + mov, 0)
+  labelBalance.textContent = `${balance} €`
+}
+calcDisplayBalance(account1.movements)
 
+// --------------------------CREATING USERNAMES---------------------------------
+
+// MAP METHOD
 // create usernames => "Steven Thomas Williams"  =  stw
-
+// we use map to create a new array
 const createUsernames = function (accs) {
   accs.forEach(function (acc) {
     acc.username = acc.owner
@@ -106,3 +115,55 @@ const createUsernames = function (accs) {
 
 createUsernames(accounts)
 console.log(accounts);
+
+
+// -------------------- WORKING BALANCE ----------------------------------------
+
+// FILTER METHOD
+// to filter for elements that satisfy a certain condition
+// we want to create an array od the deposits (movements > 0)
+// only the values that pass that condition (true) will be in the new array
+//const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
+
+const deposits = movements.filter(function (mov) {
+  return mov > 0;
+});
+console.log(deposits);
+
+const withdrawals = movements.filter(mov => mov < 0);
+console.log(withdrawals);
+
+
+// REDUCE METHOD
+// to boil down all the elements in an array to one single value
+// reduce function (acumulator, current value, index, array))
+// acumulater: acumulates de value we want to return, like snowball.
+// need to add the current value to the acumulator
+// Add the 0 at the end, to start the acumulator from zero
+//const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
+
+const balance = movements.reduce(function(acc, cur, i, arr) {
+  return acc + cur
+}, 0);
+console.log(balance);
+
+// geting maximum value from movements with reduce method
+const maximum = movements.reduce(function(acc, mov) {
+  return (acc > mov ? acc : mov)
+}, movements[0])
+console.log(maximum);
+
+//--------------------TOTAL DEPOSITS EURO TO USD --------------------------
+// chaining map, reduce and filter methods
+const eurToUsd = 1.1;
+const totalDepositToUsd = movements
+  .filter(function (mov) {
+    return mov > 0;
+  })
+  .map(function (mov) {
+    return mov * eurToUsd;
+  })
+  .reduce(function (acc, mov) {
+    return acc + mov
+  }, 0);
+console.log(totalDepositToUsd);
