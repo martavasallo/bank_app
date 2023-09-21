@@ -63,7 +63,7 @@ const currencies = new Map([
   ["GBP", "Pound sterling"],
 ]);
 
-const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
+
 
 
 
@@ -90,9 +90,14 @@ const displayMovements = function (movements) {
 
 //----------------------------DISPLAY BALANCE-----------------------------------
 
-const calcDisplayBalance = function (movements) {
-  const balance = movements.reduce((acc, mov) => acc + mov, 0)
-  labelBalance.textContent = `${balance} €`
+// const calcDisplayBalance = function (movements) {
+//   const balance = movements.reduce((acc, mov) => acc + mov, 0)
+//   labelBalance.textContent = `${balance} €`
+// }
+
+const calcDisplayBalance = function (acc) {
+  acc.balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
+  labelBalance.textContent = `${acc.balance} €`
 }
 
 
@@ -122,7 +127,7 @@ const calcDisplaySummary = function(acc) {
     .filter(mov => mov > 0)
     .map(deposit => (deposit * acc.interestRate) / 100)
     .reduce((acc, inc) => acc + inc, 0);
-    labelSumInterest.textContent = `${interest}€`
+  labelSumInterest.textContent = `${interest}€`
 }
 
 
@@ -143,10 +148,21 @@ const createUsernames = function (accs) {
 }
 
 createUsernames(accounts)
-console.log(accounts);
+// console.log(accounts);
 
 // --------------------  LOGIN FUNCTION ----------------------------------------
 // we will need the info of current account for later, just define it
+const updateUI = function (acc) {
+    // display movements
+    displayMovements(acc.movements);
+
+    // display balance
+    calcDisplayBalance(acc);
+
+    // display summary
+    calcDisplaySummary(acc);
+}
+
 let currentAccount;
 
 // create event handler
@@ -160,34 +176,87 @@ btnLogin.addEventListener('click', function(e) {
     // created username in creating usernames function
     return acc.username === inputLoginUsername.value
   })
-  console.log(currentAccount);
+  // console.log(currentAccount);
 
   // we found the account, now lets check if it is the correct pin
   // currentaccount exist ?
   // if we dont check if exists and it doesnt, system shows an error
   if (currentAccount?.pin === Number (inputLoginPin.value)) {
-    //change welcome message
+    // change welcome message
     labelWelcome.textContent = `Welcome back ${currentAccount.owner.split(' ')[0]}`
+
+    // display page
+    containerApp.style.opacity = 100;
+
+    // clear login and pin input fields
+    // clear focus
+    inputLoginUsername.value = inputLoginPin.value = ' '
+    inputLoginPin.blur()
+
+    // updated UI
+    updateUI(currentAccount)
   }
 
-  // display page
-  containerApp.style.opacity = 100;
+})
 
-  // clear login and pin input fields
-  // clear focus
-  inputLoginUsername.value = inputLoginPin.value = ' '
-  inputLoginPin.blur()
 
-  // display movements
-  displayMovements(currentAccount.movements);
+// -------------------- TRANSFER MONEY -----------------------------------------
 
-  // display balance
-  calcDisplayBalance(currentAccount.movements);
 
-  // display summary
-  calcDisplaySummary(currentAccount);
+btnTransfer.addEventListener('click', function(e) {
+  e.preventDefault()
+
+  const amount = Number(inputTransferAmount.value);
+
+  const receiverAcc = accounts
+  .find (acc => acc.username === inputTransferTo.value);
+
+  inputTransferAmount.value = inputTransferTo.value = '';
+  inputTransferTo.blur()
+
+
+  // only transfer if : balance > 0, enough money, is not yourself
+  if (
+    amount > 0 &&
+    currentAccount.balance >= amount &&
+    receiverAcc &&
+    receiverAcc?.username !== currentAccount.username
+  ) {
+    // doing the transfer
+    currentAccount.movements.push(-amount);
+    receiverAcc.movements.push(amount)
+
+    // update UI
+    updateUI(currentAccount)
+  }
+})
+
+// -------------------- CLOSE ACCOUNT ----------------------------------------
+// deletes de object from the accounts array
+btnClose.addEventListener('click', function (e) {
+  e.preventDefault()
+
+  // check if user and pin are corrects
+
+  if (
+    inputCloseUsername.value === currentAccount.username &&
+    Number(inputClosePin.value) === currentAccount.pin
+  ) {
+    // FINDINDEX METHOD finds index with condition given
+    // calculate index we want to delete
+    const index = accounts.findIndex(acc => acc.username === currentAccount.username)
+    // console.log(index);
+
+    // delete current account
+    accounts.splice(index, 1)
+
+    // hide UI
+    containerApp.style.opacity = 0
+  }
+  inputCloseUsername.value = inputClosePin.value = '';
 
 })
+
 
 
 // -------------------- WORKING BALANCE ----------------------------------------
@@ -196,15 +265,15 @@ btnLogin.addEventListener('click', function(e) {
 // to filter for elements that satisfy a certain condition
 // we want to create an array od the deposits (movements > 0)
 // only the values that pass that condition (true) will be in the new array
-//const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
+const movements2 = [200, 450, -400, 3000, -650, -130, 70, 1300];
 
-const deposits = movements.filter(function (mov) {
+const deposits = movements2.filter(function (mov) {
   return mov > 0;
 });
-console.log(deposits);
+// console.log(deposits);
 
-const withdrawals = movements.filter(mov => mov < 0);
-console.log(withdrawals);
+const withdrawals = movements2.filter(mov => mov < 0);
+// console.log(withdrawals);
 
 
 // REDUCE METHOD
@@ -215,21 +284,21 @@ console.log(withdrawals);
 // Add the 0 at the end, to start the acumulator from zero
 //const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 
-const balance = movements.reduce(function(acc, cur, i, arr) {
+const balance = movements2.reduce(function(acc, cur, i, arr) {
   return acc + cur
 }, 0);
-console.log(balance);
+// console.log(balance);
 
 // geting maximum value from movements with reduce method
-const maximum = movements.reduce(function(acc, mov) {
+const maximum = movements2.reduce(function(acc, mov) {
   return (acc > mov ? acc : mov)
-}, movements[0])
-console.log(maximum);
+}, movements2[0])
+// console.log(maximum);
 
 //--------------------TOTAL DEPOSITS EURO TO USD --------------------------
 // chaining map, reduce and filter methods
 const eurToUsd = 1.1;
-const totalDepositToUsd = movements
+const totalDepositToUsd = movements2
   .filter(function (mov) {
     return mov > 0;
   })
@@ -239,10 +308,10 @@ const totalDepositToUsd = movements
   .reduce(function (acc, mov) {
     return acc + mov
   }, 0);
-console.log(totalDepositToUsd);
+// console.log(totalDepositToUsd);
 
 
-//--------------------   JUST PRACTICE   ----------- --------------------------
+//--------------------   JUST PRACTICE FIND METHOD  ----------------------------
 // FIND METHOD - does not return a new array, just the element itself
 // to retrieve one element of an array based o a condition
 // accepts a condition
@@ -250,11 +319,11 @@ console.log(totalDepositToUsd);
 // returns first element of array that satifies condition
 
 
-const firstWithdrawal = movements.find(function (mov) {
+const firstWithdrawal = movements2.find(function (mov) {
   return mov < 0
 })
-console.log(firstWithdrawal); // = -400
+// console.log(firstWithdrawal); // = -400
 
 // can also find objects
 const account = accounts.find(acc => acc.owner === 'Jessica Davis');
-console.log(account); // = {owner: 'Jessica Davis', movements: Array(8), interestRate: 1.5, pin: 2222, username: 'jd'}
+// console.log(account); // = {owner: 'Jessica Davis', movements: Array(8), interestRate: 1.5, pin: 2222, username: 'jd'}
