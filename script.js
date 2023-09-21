@@ -86,7 +86,7 @@ const displayMovements = function (movements) {
     containerMovements.insertAdjacentHTML("afterbegin", html);
   });
 };
-displayMovements(account1.movements);
+
 
 //----------------------------DISPLAY BALANCE-----------------------------------
 
@@ -94,7 +94,7 @@ const calcDisplayBalance = function (movements) {
   const balance = movements.reduce((acc, mov) => acc + mov, 0)
   labelBalance.textContent = `${balance} €`
 }
-calcDisplayBalance(account1.movements)
+
 
 //----------------------------DISPLAY SUMMARY-----------------------------------
 
@@ -107,32 +107,29 @@ calcDisplayBalance(account1.movements)
 //   }, 0)
 // calcDisplayBalance(movements)
 
-const calcDisplaySummary = function(movements) {
-  const incomes = movements
+const calcDisplaySummary = function(acc) {
+  const incomes = acc.movements
     .filter(mov => mov > 0)
     .reduce((acc, mov) => acc + mov, 0);
   labelSumIn.textContent = `${incomes}€`;
 
-  const outcomes = movements
+  const outcomes = acc.movements
     .filter(mov => mov < 0)
     .reduce((acc, mov) => acc = acc + mov, 0);
   labelSumOut.textContent = `${Math.abs(outcomes)}€`;
 
-  const interest = movements
+  const interest = acc.movements
     .filter(mov => mov > 0)
-    .map(deposit => (deposit * 1.2) / 100)
+    .map(deposit => (deposit * acc.interestRate) / 100)
     .reduce((acc, inc) => acc + inc, 0);
     labelSumInterest.textContent = `${interest}€`
 }
 
-calcDisplaySummary(account1.movements)
-
 
 // --------------------------CREATING USERNAMES---------------------------------
 
-// MAP METHOD
+// MAP METHOD - creates new array
 // create usernames => "Steven Thomas Williams"  =  stw
-// we use map to create a new array
 const createUsernames = function (accs) {
   accs.forEach(function (acc) {
     acc.username = acc.owner
@@ -148,10 +145,54 @@ const createUsernames = function (accs) {
 createUsernames(accounts)
 console.log(accounts);
 
+// --------------------  LOGIN FUNCTION ----------------------------------------
+// we will need the info of current account for later, just define it
+let currentAccount;
+
+// create event handler
+btnLogin.addEventListener('click', function(e) {
+  // prevent submit form reload the page
+  e.preventDefault();
+
+  // find the account that the user inputed
+  currentAccount = accounts.find(function (acc) {
+    // we need to read the input value (.value)
+    // created username in creating usernames function
+    return acc.username === inputLoginUsername.value
+  })
+  console.log(currentAccount);
+
+  // we found the account, now lets check if it is the correct pin
+  // currentaccount exist ?
+  // if we dont check if exists and it doesnt, system shows an error
+  if (currentAccount?.pin === Number (inputLoginPin.value)) {
+    //change welcome message
+    labelWelcome.textContent = `Welcome back ${currentAccount.owner.split(' ')[0]}`
+  }
+
+  // display page
+  containerApp.style.opacity = 100;
+
+  // clear login and pin input fields
+  // clear focus
+  inputLoginUsername.value = inputLoginPin.value = ' '
+  inputLoginPin.blur()
+
+  // display movements
+  displayMovements(currentAccount.movements);
+
+  // display balance
+  calcDisplayBalance(currentAccount.movements);
+
+  // display summary
+  calcDisplaySummary(currentAccount);
+
+})
+
 
 // -------------------- WORKING BALANCE ----------------------------------------
 
-// FILTER METHOD
+// FILTER METHOD - returns new array
 // to filter for elements that satisfy a certain condition
 // we want to create an array od the deposits (movements > 0)
 // only the values that pass that condition (true) will be in the new array
@@ -199,3 +240,21 @@ const totalDepositToUsd = movements
     return acc + mov
   }, 0);
 console.log(totalDepositToUsd);
+
+
+//--------------------   JUST PRACTICE   ----------- --------------------------
+// FIND METHOD - does not return a new array, just the element itself
+// to retrieve one element of an array based o a condition
+// accepts a condition
+// needs callback function that return a boolean
+// returns first element of array that satifies condition
+
+
+const firstWithdrawal = movements.find(function (mov) {
+  return mov < 0
+})
+console.log(firstWithdrawal); // = -400
+
+// can also find objects
+const account = accounts.find(acc => acc.owner === 'Jessica Davis');
+console.log(account); // = {owner: 'Jessica Davis', movements: Array(8), interestRate: 1.5, pin: 2222, username: 'jd'}
