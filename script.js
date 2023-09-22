@@ -460,3 +460,60 @@ movements2.sort((a,b) => {
   if (a < b) return 1;
 })
 console.log(movements2);
+
+
+//-------------------- CREATE ARRAYS -------------------------------------------
+//when we have the data
+// we created it manually
+console.log([1, 2, 3, 4, 5, 6]);
+// array constructor function
+console.log(new Array(1, 2, 3, 4, 5, 6));
+
+// -- FILL METHOD --
+// -- generate arrays without defining arrays manually --
+const x = new Array(7)
+console.log(x); // [empty × 7]
+// at the moment we can not use the X array for anything
+// the use .fill method = pass a value and it will fill the array with specific value
+// mutates the array
+x.fill(1)  // [1, 1, 1, 1, 1, 1, 1]
+
+// fill(element, index_where_to_start)
+x.fill(1, 3) // [empty × 3, 1, 1, 1, 1]
+x.fill(1, 3, 5) // [empty × 3, 1, 1, empty x 2]
+
+const arrayFill = [1, 2, 3, 4, 5, 6, 7]
+arrayFill.fill(23, 2, 6) // [1, 2, 23, 23, 23, 23, 7]
+
+
+// -- ARRAY.FROM FUNCTION --
+// Array.from()
+// Array.from({object_with_length_property}, mapping function)
+// mapping function doesnt require arguments
+const y = Array.from({ length: 7}, () => 1) // [1, 1, 1, 1, 1, 1, 1]
+
+const z = Array.from({ length: 7}, (cur, i) => i + 1) // [1, 2, 3, 4, 5, 6, 7]
+
+
+//------------------------ NODE LIST -------------------------------------------
+// is a collection of DOM nodes. NodeList objects are returned by `querySelector` and `childNodes`
+// they are not arrays. They are stored in the user interface, they are not in the code
+// We need to convert it in an array to work with them
+
+// get the values from the user interface
+// const new_array = Array.from(element_to_convert_to_array('value_class'))
+
+const movementsUItest = Array.from(document.querySelectorAll('.movements__value'))
+console.log(movementsUItest); // [div.movements__value, div.movements__value]
+// we only get the two values that are hard coded in the html code, not the movementes in the object. we need an Event handler
+
+//-- attach event listener anywhere in the html code and then click on it
+// create an array with Array.from
+// use mapping witn array. to get the right information
+labelBalance.addEventListener('click', function () {
+  const movementsUI = Array.from(
+    document.querySelectorAll('.movements__value'),
+    el => Number(el.textContent.replace('€', ''))
+  )
+  console.log(movementsUI); // we get the 7 movements
+})
